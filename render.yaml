@@ -22,7 +22,7 @@ services:
   - type: web
     name: chat-client
     env: static
-    buildCommand: cd client && npm install && npm run build
+    buildCommand: cd client && npm ci && npm run build
     staticPublishPath: ./client/build
     envVars:
       - key: REACT_APP_API_URL
