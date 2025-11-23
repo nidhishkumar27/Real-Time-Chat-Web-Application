@@ -192,23 +192,31 @@ const connectDB = async () => {
 // Start server
 const PORT = process.env.PORT || 5000;
 
-// Start server even if MongoDB fails (for debugging)
-connectDB().then((dbConnected) => {
-  if (!dbConnected) {
-    console.log(`[Server] ⚠️  Starting server without database connection...`);
-    console.log(`[Server] 💡 Fix MongoDB connection to enable full functionality`);
-  }
+// Start server immediately, connect to DB in background
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`[Server] ✅ Running on port ${PORT}`);
+  console.log(`[Server] 📡 API: http://0.0.0.0:${PORT}/api`);
   
-  server.listen(PORT, () => {
-    console.log(`[Server] ✅ Running on port ${PORT}`);
-    console.log(`[Server] 📡 API: http://localhost:${PORT}/api`);
-    console.log(`[Server] 🌐 Network: http://10.16.85.240:${PORT}/api`);
+  // Connect to MongoDB in background (non-blocking)
+  connectDB().then((dbConnected) => {
     if (!dbConnected) {
       console.log(`[Server] ⚠️  Database not connected - some features disabled`);
+      console.log(`[Server] 💡 Check MONGODB_URI environment variable`);
+    } else {
+      console.log(`[Server] ✅ Database connected successfully`);
     }
+  }).catch((error) => {
+    console.error(`[Server] ❌ Database connection error: ${error.message}`);
+    console.log(`[Server] ⚠️  Server running without database - some features disabled`);
   });
-}).catch((error) => {
-  console.error(`[Server] ❌ Failed to start: ${error.message}`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  console.error(`[Server] ❌ Server error: ${error.message}`);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`[Server] Port ${PORT} is already in use`);
+  }
   process.exit(1);
 });
 
