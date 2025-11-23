@@ -93,47 +93,65 @@ The application will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000
 
-## Deployment on Render
+## Deployment
 
-### Backend Deployment
+### ⚠️ Important: Backend Deployment
 
-1. Create a new **Web Service** on Render
+**Vercel does NOT support WebSockets/Socket.io** in serverless functions. You need to deploy your backend separately on a platform that supports persistent connections:
+
+**Recommended Backend Hosting Options:**
+- **Railway** (Recommended) - Easy deployment, supports WebSockets
+- **Render** - Free tier available, supports WebSockets
+- **Fly.io** - Good for Node.js apps with WebSockets
+- **DigitalOcean App Platform** - Supports WebSockets
+- **Heroku** - Paid, but reliable
+
+**Backend Deployment Steps (Example for Railway):**
+
+1. Go to [Railway.app](https://railway.app) and create a new project
 2. Connect your GitHub repository
-3. Configure the service:
-   - **Build Command**: `cd server && npm install`
-   - **Start Command**: `cd server && npm start`
-   - **Environment**: `Node`
-4. Add environment variables in Render dashboard:
+3. Add a new service → Select your repo → Choose `server` as root directory
+4. Add environment variables:
    - `MONGODB_URI` - Your MongoDB connection string
    - `JWT_SECRET` - A secure random string
-   - `CLIENT_URL` - Your frontend URL (set after deploying frontend)
-   - `PORT` - 5000 (or leave default)
+   - `CLIENT_URL` - Your Vercel frontend URL (set after deploying frontend)
+   - `PORT` - 5000 (Railway sets this automatically)
    - `NODE_ENV` - production
+5. Railway will auto-detect and deploy your Node.js app
 
-### Frontend Deployment
+### Frontend Deployment on Vercel
 
-1. Create a new **Static Site** on Render
-2. Connect your GitHub repository
-3. Configure the service:
-   - **Build Command**: `cd client && npm install && npm run build`
-   - **Publish Directory**: `client/build`
-4. Add environment variables:
-   - `REACT_APP_API_URL` - Your backend URL (e.g., `https://your-api.onrender.com`)
-   - `REACT_APP_SOCKET_URL` - Your backend URL (same as above)
+1. **Install Vercel CLI** (optional, for local testing):
+   ```bash
+   npm i -g vercel
+   ```
 
-### Alternative: Using render.yaml
+2. **Deploy via Vercel Dashboard:**
+   - Go to [vercel.com](https://vercel.com)
+   - Click "New Project"
+   - Import your GitHub repository
+   - Configure project:
+     - **Root Directory**: `client`
+     - **Framework Preset**: Create React App
+     - **Build Command**: `npm install && npm run build`
+     - **Output Directory**: `build`
+   - Add environment variables:
+     - `REACT_APP_API_URL` - Your backend URL (e.g., `https://your-api.railway.app/api`)
+     - `REACT_APP_SOCKET_URL` - Your backend URL (e.g., `https://your-api.railway.app`)
+   - Click "Deploy"
 
-You can use the provided `render.yaml` file for automated deployment:
+3. **Deploy via CLI** (alternative):
+   ```bash
+   cd client
+   vercel
+   ```
+   Follow the prompts and add environment variables when asked.
 
-1. Push your code to GitHub
-2. In Render dashboard, select "New" → "Blueprint"
-3. Connect your repository
-4. Render will automatically detect and use `render.yaml`
-
-**Important Notes for Render:**
-- After deploying backend, update `CLIENT_URL` in backend environment variables
-- After deploying frontend, update `REACT_APP_API_URL` and `REACT_APP_SOCKET_URL` in frontend environment variables
-- Make sure your MongoDB Atlas allows connections from Render's IP addresses (0.0.0.0/0 for Network Access)
+**Important Notes:**
+- After deploying backend, update `CLIENT_URL` in backend environment variables with your Vercel URL
+- After deploying frontend, update `REACT_APP_API_URL` and `REACT_APP_SOCKET_URL` in Vercel dashboard
+- Make sure your MongoDB Atlas allows connections from your backend hosting provider's IP addresses (0.0.0.0/0 for Network Access)
+- The `vercel.json` file in the root is configured for frontend deployment
 
 ## Project Structure
 
