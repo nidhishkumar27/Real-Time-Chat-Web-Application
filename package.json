@@ -1,0 +1,26 @@
+{
+  "name": "realtime-chat-app",
+  "version": "1.0.0",
+  "description": "Real-time chat application with Socket.io, MongoDB, and React",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && set HOST=0.0.0.0&& npm start",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "setup-network": "node setup-network.js"
+  },
+  "keywords": [
+    "chat",
+    "realtime",
+    "socket.io",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "mongodb": "^7.0.0"
+  }
+}
