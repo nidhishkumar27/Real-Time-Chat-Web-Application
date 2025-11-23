@@ -1,124 +1,168 @@
 # Real-Time Chat Application
 
-A full-stack real-time chat application built with React, Socket.io, MongoDB, and Express.
+A full-stack real-time chat application built with React, Node.js, Socket.io, and MongoDB.
 
 ## Features
 
-- ✅ User authentication (Signup/Login with JWT)
-- ✅ Real-time one-to-one chat using Socket.io
-- ✅ Message persistence with MongoDB
-- ✅ Online/Offline presence indicators
-- ✅ Responsive UI with TailwindCSS and DaisyUI
-- ✅ Global state management with Zustand
-- ✅ Error handling (client and server)
-- ✅ Input validation and logging
+- 🔐 User authentication (Signup/Login with JWT)
+- 💬 Real-time one-to-one messaging with Socket.io
+- 📱 Online/Offline user presence indicators
+- 💾 Message persistence with MongoDB
+- 🎨 Modern UI with TailwindCSS and DaisyUI
+- 📱 Responsive design
+- 🔒 Protected routes
+- ✅ Input validation and error handling
 
 ## Tech Stack
 
+### Frontend
+- React 18
+- Socket.io Client
+- Zustand (State Management)
+- React Router
+- TailwindCSS + DaisyUI
+- Axios
+
 ### Backend
 - Node.js + Express
-- Socket.io for real-time communication
-- MongoDB with Mongoose
-- JWT for authentication
-- bcryptjs for password hashing
-- express-validator for input validation
+- Socket.io
+- MongoDB + Mongoose
+- JWT Authentication
+- Bcryptjs
 
-### Frontend
-- React
-- Socket.io-client
-- Zustand for state management
-- TailwindCSS + DaisyUI for styling
-- Axios for API calls
+## Prerequisites
 
-## Setup Instructions
-
-### Prerequisites
-- Node.js (v16 or higher)
-- MongoDB (running locally or connection string)
+- Node.js (v14 or higher)
+- MongoDB (local or MongoDB Atlas)
 - npm or yarn
 
-### Installation
+## Installation
 
-1. Install root dependencies:
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd realtime-chat-app
+```
+
+2. Install dependencies:
 ```bash
 npm run install-all
 ```
 
-Or install manually:
-```bash
-npm install
-cd server && npm install
-cd ../client && npm install
-```
+3. Set up environment variables:
 
-2. Set up environment variables:
-
-In `server/` directory, create a `.env` file:
+**Server** (`server/.env`):
 ```env
-PORT=5000
 MONGODB_URI=mongodb://localhost:27017/realtime-chat
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-NODE_ENV=development
+# OR for MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/realtime-chat?appName=Cluster0
+
+JWT_SECRET=your-secret-key-here
+PORT=5000
+CLIENT_URL=http://localhost:3000
 ```
 
-3. Start MongoDB (if running locally):
-```bash
-# Make sure MongoDB is running on localhost:27017
-# Or update MONGODB_URI in .env to your MongoDB connection string
+**Client** (`client/.env`):
+```env
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_SOCKET_URL=http://localhost:5000
 ```
 
-4. Run the application:
+## Running the Application
 
-**Option 1: Run both server and client together**
+### Development Mode
+
+Run both server and client concurrently:
 ```bash
 npm run dev
 ```
 
-**Option 2: Run separately**
-```bash
-# Terminal 1 - Backend
-npm run server
+Or run them separately:
 
-# Terminal 2 - Frontend
+**Terminal 1 - Server:**
+```bash
+npm run server
+```
+
+**Terminal 2 - Client:**
+```bash
 npm run client
 ```
 
 The application will be available at:
 - Frontend: http://localhost:3000
-- Backend: http://localhost:5000
+- Backend API: http://localhost:5000
+
+## Deployment on Render
+
+### Backend Deployment
+
+1. Create a new **Web Service** on Render
+2. Connect your GitHub repository
+3. Configure the service:
+   - **Build Command**: `cd server && npm install`
+   - **Start Command**: `cd server && npm start`
+   - **Environment**: `Node`
+4. Add environment variables in Render dashboard:
+   - `MONGODB_URI` - Your MongoDB connection string
+   - `JWT_SECRET` - A secure random string
+   - `CLIENT_URL` - Your frontend URL (set after deploying frontend)
+   - `PORT` - 5000 (or leave default)
+   - `NODE_ENV` - production
+
+### Frontend Deployment
+
+1. Create a new **Static Site** on Render
+2. Connect your GitHub repository
+3. Configure the service:
+   - **Build Command**: `cd client && npm install && npm run build`
+   - **Publish Directory**: `client/build`
+4. Add environment variables:
+   - `REACT_APP_API_URL` - Your backend URL (e.g., `https://your-api.onrender.com`)
+   - `REACT_APP_SOCKET_URL` - Your backend URL (same as above)
+
+### Alternative: Using render.yaml
+
+You can use the provided `render.yaml` file for automated deployment:
+
+1. Push your code to GitHub
+2. In Render dashboard, select "New" → "Blueprint"
+3. Connect your repository
+4. Render will automatically detect and use `render.yaml`
+
+**Important Notes for Render:**
+- After deploying backend, update `CLIENT_URL` in backend environment variables
+- After deploying frontend, update `REACT_APP_API_URL` and `REACT_APP_SOCKET_URL` in frontend environment variables
+- Make sure your MongoDB Atlas allows connections from Render's IP addresses (0.0.0.0/0 for Network Access)
 
 ## Project Structure
 
 ```
 realtime-chat-app/
-├── client/              # React frontend
+├── client/                 # React frontend
 │   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── store/       # Zustand stores
-│   │   ├── services/    # API and Socket services
-│   │   ├── utils/       # Utility functions
-│   │   └── App.js       # Main app component
-│   └── package.json
-├── server/              # Express backend
-│   ├── models/          # Mongoose models
-│   ├── routes/          # API routes
-│   ├── middleware/      # Express middleware
-│   ├── socket/          # Socket.io handlers
-│   ├── server.js        # Main server file
-│   └── package.json
-└── package.json         # Root package.json
+│   │   ├── components/    # React components
+│   │   ├── services/      # API and Socket services
+│   │   ├── store/         # Zustand stores
+│   │   └── utils/         # Utility functions
+│   └── public/
+├── server/                 # Express backend
+│   ├── models/            # Mongoose models
+│   ├── routes/            # API routes
+│   ├── middleware/        # Auth middleware
+│   ├── socket/            # Socket.io handlers
+│   └── server.js          # Main server file
+└── package.json           # Root package.json
 ```
 
 ## API Endpoints
 
-### Authentication
 - `POST /api/auth/signup` - Register new user
 - `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user (protected)
-- `GET /api/auth/users` - Get all users (protected)
-
-### Messages
-- `GET /api/messages/:recipientId` - Get conversation (protected)
+- `GET /api/auth/me` - Get current user
+- `GET /api/auth/users` - Get all users (for chat list)
+- `GET /api/messages/:userId` - Get messages with a user
+- `GET /api/health` - Health check
 
 ## Socket Events
 
@@ -126,21 +170,17 @@ realtime-chat-app/
 - `message:send` - Send a message
 - `typing:start` - User started typing
 - `typing:stop` - User stopped typing
-- `message:read` - Mark message as read
 
 ### Server → Client
+- `message:received` - Receive a new message
 - `message:sent` - Message sent confirmation
-- `message:received` - New message received
-- `message:error` - Message error
+- `users:online` - List of online users
 - `user:online` - User came online
 - `user:offline` - User went offline
-- `users:online` - List of online users
-- `typing:started` - User started typing
-- `typing:stopped` - User stopped typing
+- `user:registered` - New user registered
+- `typing:indicator` - Typing indicator from another user
 
 ## License
 
 ISC
-
-
 

@@ -74,20 +74,24 @@ router.post(
       console.log(`[Auth] New user registered: ${username} (${email})`);
       
       // Import io dynamically to avoid circular dependency
-      const { io } = await import('../server.js');
-      
-      // Notify all connected users about the new user
-      if (io) {
-        io.emit('user:registered', {
-          user: {
-            _id: user._id,
-            id: user._id,
-            username: user.username,
-            email: user.email,
-            createdAt: user.createdAt,
-          },
-        });
-        console.log(`[Auth] Broadcasted new user registration to all connected clients`);
+      try {
+        const { io } = await import('../server.js');
+        
+        // Notify all connected users about the new user
+        if (io) {
+          io.emit('user:registered', {
+            user: {
+              _id: user._id,
+              id: user._id,
+              username: user.username,
+              email: user.email,
+              createdAt: user.createdAt,
+            },
+          });
+          console.log(`[Auth] Broadcasted new user registration to all connected clients`);
+        }
+      } catch (error) {
+        console.warn('[Auth] Could not emit user:registered event:', error.message);
       }
       
       res.status(201).json({
