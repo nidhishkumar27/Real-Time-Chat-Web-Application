@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import useChatStore from '../store/useChatStore';
 import useAuthStore from '../store/useAuthStore';
 import socketService from '../services/socket';
 import { messagesAPI } from '../services/api';
 
 const ChatWindow = () => {
-  const { selectedUser, messages, typingUsers, addMessage } = useChatStore();
+  const { selectedUser, messages, typingUsers } = useChatStore();
   const { user: currentUser } = useAuthStore();
   const [messageInput, setMessageInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,21 +13,17 @@ const ChatWindow = () => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   
-  const selectedUserIdKey = selectedUser ? (selectedUser._id?.toString() || selectedUser.id?.toString() || selectedUser._id || selectedUser.id) : null;
-  const conversationMessages = selectedUserIdKey ? (messages[selectedUserIdKey] || []) : [];
-  const isTyping = selectedUser && typingUsers[selectedUser._id];
-  
-  useEffect(() => {
-    if (selectedUser) {
-      loadConversation();
-    }
+  const selectedUserIdKey = useMemo(() => {
+    return selectedUser ? (selectedUser._id?.toString() || selectedUser.id?.toString() || selectedUser._id || selectedUser.id) : null;
   }, [selectedUser]);
   
-  useEffect(() => {
-    scrollToBottom();
-  }, [conversationMessages]);
+  const conversationMessages = useMemo(() => {
+    return selectedUserIdKey ? (messages[selectedUserIdKey] || []) : [];
+  }, [selectedUserIdKey, messages]);
   
-  const loadConversation = async () => {
+  const isTyping = selectedUser && typingUsers[selectedUser._id];
+  
+  const loadConversation = useCallback(async () => {
     if (!selectedUser) return;
     
     setLoading(true);
@@ -44,11 +40,21 @@ const ChatWindow = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedUser]);
   
-  const scrollToBottom = () => {
+  useEffect(() => {
+    if (selectedUser) {
+      loadConversation();
+    }
+  }, [selectedUser, loadConversation]);
+  
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
+  
+  useEffect(() => {
+    scrollToBottom();
+  }, [conversationMessages, scrollToBottom]);
   
   const handleSendMessage = (e) => {
     e.preventDefault();

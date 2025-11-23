@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import useChatStore from '../store/useChatStore';
@@ -9,28 +9,11 @@ import ChatWindow from './ChatWindow';
 
 const Chat = () => {
   const { user, token, isAuthenticated, logout } = useAuthStore();
-  const { setUsers, setSelectedUser, selectedUser } = useChatStore();
+  const { setUsers, setSelectedUser } = useChatStore();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   
-  useEffect(() => {
-    console.log('[Chat] Auth check - isAuthenticated:', isAuthenticated, 'token:', token ? 'exists' : 'missing');
-    
-    if (!isAuthenticated || !token) {
-      console.log('[Chat] Not authenticated, redirecting to login');
-      navigate('/login');
-      return;
-    }
-    
-    initializeChat();
-    
-    return () => {
-      // Cleanup on unmount
-      socketService.disconnect();
-    };
-  }, [isAuthenticated, token, navigate]);
-  
-  const initializeChat = async () => {
+  const initializeChat = useCallback(async () => {
     try {
       // Load users first
       const usersData = await authAPI.getUsers();
@@ -60,7 +43,24 @@ const Chat = () => {
       }
       setLoading(false);
     }
-  };
+  }, [token, setUsers, logout, navigate]);
+  
+  useEffect(() => {
+    console.log('[Chat] Auth check - isAuthenticated:', isAuthenticated, 'token:', token ? 'exists' : 'missing');
+    
+    if (!isAuthenticated || !token) {
+      console.log('[Chat] Not authenticated, redirecting to login');
+      navigate('/login');
+      return;
+    }
+    
+    initializeChat();
+    
+    return () => {
+      // Cleanup on unmount
+      socketService.disconnect();
+    };
+  }, [isAuthenticated, token, navigate, initializeChat]);
   
   const handleSelectUser = (user) => {
     setSelectedUser(user);

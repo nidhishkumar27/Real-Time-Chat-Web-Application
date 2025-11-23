@@ -57,13 +57,13 @@ export const authAPI = {
     } catch (error) {
       // Better error handling for network issues
       if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error') || error.message?.includes('ERR_CONNECTION_REFUSED')) {
-        throw {
-          error: 'Cannot connect to server. Please make sure the backend server is running on port 5000.',
-          code: 'ERR_NETWORK',
-          message: error.message,
-        };
+        throw new Error('Cannot connect to server. Please make sure the backend server is running on port 5000.');
       }
-      throw error.response?.data || { error: error.message || 'Signup failed' };
+      const errorData = error.response?.data;
+      if (errorData && errorData.error) {
+        throw new Error(errorData.error);
+      }
+      throw new Error(error.message || 'Signup failed');
     }
   },
   
@@ -77,13 +77,13 @@ export const authAPI = {
     } catch (error) {
       // Better error handling for network issues
       if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error') || error.message?.includes('ERR_CONNECTION_REFUSED')) {
-        throw {
-          error: 'Cannot connect to server. Please make sure the backend server is running on port 5000.',
-          code: 'ERR_NETWORK',
-          message: error.message,
-        };
+        throw new Error('Cannot connect to server. Please make sure the backend server is running on port 5000.');
       }
-      throw error.response?.data || { error: error.message || 'Login failed' };
+      const errorData = error.response?.data;
+      if (errorData && errorData.error) {
+        throw new Error(errorData.error);
+      }
+      throw new Error(error.message || 'Login failed');
     }
   },
   
@@ -92,7 +92,11 @@ export const authAPI = {
       const response = await api.get('/auth/me');
       return response.data;
     } catch (error) {
-      throw error.response?.data || { error: 'Failed to get user' };
+      const errorData = error.response?.data;
+      if (errorData && errorData.error) {
+        throw new Error(errorData.error);
+      }
+      throw new Error('Failed to get user');
     }
   },
   
@@ -101,7 +105,11 @@ export const authAPI = {
       const response = await api.get('/auth/users');
       return response.data;
     } catch (error) {
-      throw error.response?.data || { error: 'Failed to get users' };
+      const errorData = error.response?.data;
+      if (errorData && errorData.error) {
+        throw new Error(errorData.error);
+      }
+      throw new Error('Failed to get users');
     }
   },
 };
@@ -112,7 +120,11 @@ export const messagesAPI = {
       const response = await api.get(`/messages/${recipientId}`);
       return response.data;
     } catch (error) {
-      throw error.response?.data || { error: 'Failed to get conversation' };
+      const errorData = error.response?.data;
+      if (errorData && errorData.error) {
+        throw new Error(errorData.error);
+      }
+      throw new Error('Failed to get conversation');
     }
   },
 };

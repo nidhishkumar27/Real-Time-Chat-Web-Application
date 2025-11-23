@@ -104,7 +104,7 @@ const useChatStore = create((set, get) => ({
     
     set((state) => {
       // Check if message already exists in any conversation
-      for (const [key, msgs] of Object.entries(state.messages)) {
+      for (const [_key, msgs] of Object.entries(state.messages)) {
         if (msgs.some((m) => (m._id?.toString() || m._id) === (message._id?.toString() || message._id))) {
           return state; // Message already exists
         }
