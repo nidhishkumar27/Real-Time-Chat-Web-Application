@@ -14,7 +14,7 @@ class SocketService {
     
     const chatStore = useChatStore.getState();
     
-    this.socket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000', {
+    this.socket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
       auth: { token },
       transports: ['websocket', 'polling'],
     });

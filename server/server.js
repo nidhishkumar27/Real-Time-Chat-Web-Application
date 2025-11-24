@@ -14,91 +14,37 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-// Socket.io CORS configuration - allow both localhost and network IP
-const socketOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  process.env.CLIENT_URL,
-].filter(Boolean);
 
-console.log('[Server] Allowed Socket.io origins:', socketOrigins);
-
-const io = new Server(server, {
-  cors: {
-    origin: (origin, callback) => {
-      // Allow requests with no origin
-      if (!origin) {
-        return callback(null, true);
-      }
-      
-      // Allow if in allowed list
-      if (socketOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      
-      // In development, allow localhost and network IP
-      if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
-        if (origin.startsWith('http://localhost:') || 
-            origin.startsWith('http://127.0.0.1:') ||
-            origin.includes('10.16.85.240')) {
-          console.log('[Server] Allowing origin in development:', origin);
-          return callback(null, true);
-        }
-      }
-      
-      console.warn('[Server] ❌ CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    },
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-});
-
-// Middleware - CORS configuration
-// Allow both localhost and network IP for development
+// Define allowed origins for CORS
 const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  process.env.CLIENT_URL,
-].filter(Boolean); // Remove undefined values
-
-// If CLIENT_URL is set, add it to allowed origins
-if (process.env.CLIENT_URL && !allowedOrigins.includes(process.env.CLIENT_URL)) {
-  allowedOrigins.push(process.env.CLIENT_URL);
+  'http://localhost:3000', // Development
+];
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL); // Production
 }
 
 console.log('[Server] Allowed CORS origins:', allowedOrigins);
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {
-      return callback(null, true);
-    }
+    // Allow requests with no origin (like mobile apps, curl)
+    if (!origin) return callback(null, true);
+    // Allow if origin is in the allowed list
+    if (allowedOrigins.includes(origin)) return callback(null, true);
     
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    // For development, allow any localhost, 127.0.0.1, or network IP
-    if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
-      if (origin.startsWith('http://localhost:') || 
-          origin.startsWith('http://127.0.0.1:') ||
-          origin.includes('10.16.85.240')) {
-        console.log('[Server] ✅ Allowing origin in development:', origin);
-        return callback(null, true);
-      }
-    }
-    
-    console.warn('[Server] ❌ CORS blocked origin:', origin);
-    console.warn('[Server] Allowed origins:', allowedOrigins);
+    // Block all other origins
+    console.warn(`[Server] ❌ CORS blocked origin: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+};
+
+const io = new Server(server, {
+  cors: corsOptions,
+});
+
+// Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
